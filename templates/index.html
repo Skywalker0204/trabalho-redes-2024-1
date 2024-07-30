@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Chat{% endblock %}
+
+{% block content %}
+    <h2>Welcome, {{ current_user.username }}!</h2>
+    <button onclick="logout()">Logout</button>
+    <h3>Rooms</h3>
+    <input type="text" id="room-name" placeholder="Room Name">
+    <button onclick="createRoom()">Create Room</button>
+    <ul id="rooms">
+        <!-- Dynamically added rooms -->
+    </ul>
+    <h3>Current Room: <span id="current-room">None</span></h3>
+    <h3>Chat</h3>
+    <div id="chat-box">
+        <!-- Messages will appear here -->
+    </div>
+    <input type="text" id="message" placeholder="Message">
+    <button onclick="sendMessage()">Send</button>
+    <br>
+    <input type="file" id="file" accept="image/*,audio/*">
+    <button onclick="sendFile()">Send File</button>
+    <script>
+        const socket = io();
+        let currentRoom = '';
+        const uploadUrl = "{{ upload_url }}";
+        const logoutUrl = "{{ logout_url }}";
+
+        function logout() {
+            window.location.href = logoutUrl;
+        }
+
+        function createRoom() {
+            const room = document.getElementById('room-name').value;
+            if (room) {
+                joinRoom(room);
+                document.getElementById('rooms').innerHTML += `<li onclick="joinRoom('${room}')">${room}</li>`;
+            }
+        }
+
+        function joinRoom(room) {
+            if (currentRoom) {
+                socket.emit('leave', { room: currentRoom });
+            }
+            currentRoom = room;
+            document.getElementById('current-room').innerText = room;
+            socket.emit('join', { room: room });
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            if (message && currentRoom) {
+                socket.emit('message', { msg: message, room: currentRoom });
+                document.getElementById('message').value = '';
+            }
+        }
+
+        function sendFile() {
+            const fileInput = document.getElementById('file');
+            if (fileInput.files.length > 0 && currentRoom) {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('room', currentRoom);
+                formData.append('file_type', fileInput.files[0].type.startsWith('image/') ? 'image' : 'audio');
+
+                fetch(uploadUrl, {
+                    method: 'POST',
+                    body: formData
+                }).then(response => {
+                    if (!response.ok) {
+                        console.error('File upload failed:', response.statusText);
+                    }
+                    fileInput.value = '';
+                }).catch(error => {
+                    console.error('File upload error:', error);
+                });
+            }
+        }
+
+        socket.on('message', (data) => {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<p><strong>${data.user}:</strong> ${data.msg}</p>`;
+        });
+
+        socket.on('file', (data) => {
+            const chatBox = document.getElementById('chat-box');
+            if (data.type === 'image') {
+                chatBox.innerHTML += `<p><strong>${data.user}:</strong> <img src="${data.url}" width="200"></p>`;
+            } else if (data.type === 'audio') {
+                chatBox.innerHTML += `<p><strong>${data.user}:</strong> <audio controls src="${data.url}"></audio></p>`;
+            }
+        });
+    </script>
+{% endblock %}
