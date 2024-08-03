@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Select a Room</h2>
+{% if rooms %}
+    <ul id="rooms-list">
+        {% for room in rooms %}
+            <li>{{ room.name }} - <a href="{{ url_for('chat_room', room_id=room.id) }}">Join</a></li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No rooms available. Please request to join a room or create a new one.</p>
+{% endif %}
+
+<h2>Request to Join a Room</h2>
+<form id="request-room-form" method="POST" action="{{ url_for('request_room') }}">
+    <input type="text" name="room_name" placeholder="Room Name" required>
+    <button type="submit">Request to Join</button>
+</form>
+<br>
+<a href="{{ url_for('create_room') }}">Create or Manage Rooms</a>
+
+<!-- New button and section for users and rooms list -->
+<br>
+<br>
+<button id="toggle-info-button">Show All Users and Rooms</button>
+<div id="info-section" style="display: none;">
+    <h2>All Users</h2>
+    <ul id="users-list">
+        {% if users %}
+            {% for user in users %}
+                <li>{{ user.username }}</li>
+            {% endfor %}
+        {% else %}
+            <p>No users available.</p>
+        {% endif %}
+    </ul>
+
+    <h2>All Created Rooms</h2>
+    <ul id="all-rooms-list">
+        {% if all_rooms %}
+            {% for room in all_rooms %}
+                <li>{{ room.name }}</li>
+            {% endfor %}
+        {% else %}
+            <p>No additional rooms available.</p>
+        {% endif %}
+    </ul>
+</div>
+
+<script>
+    document.getElementById('request-room-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        fetch('{{ url_for("request_room") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+            alert(data);
+            location.reload();
+        });
+    });
+
+    document.getElementById('toggle-info-button').addEventListener('click', function() {
+        const infoSection = document.getElementById('info-section');
+        if (infoSection.style.display === 'none') {
+            infoSection.style.display = 'block';
+            this.textContent = 'Hide All Users and Rooms';
+        } else {
+            infoSection.style.display = 'none';
+            this.textContent = 'Show All Users and Rooms';
+        }
+    });
+</script>
+
+{% endblock %}

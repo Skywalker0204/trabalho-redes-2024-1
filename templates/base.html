@@ -1,8 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Chat Application{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='chat.js') }}"></script>
     <style>
+        body {
+        background-color: #e7eeee; /* Replace with your desired color */
+    }
+    .chat-room {
+        background-color: #ffffff; /* Background color for the chat room area */
+    }
         .alert {
             padding: 20px;
             background-color: #f44336;
@@ -25,19 +35,56 @@
         .closebtn:hover {
             color: black;
         }
+        .profile-popup {
+            display: none;
+            position: absolute;
+            background-color: #ffffff;
+            border: 1px solid #2f4f4f;
+            padding: 10px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .user-name:hover + .profile-popup {
+            display: block;
+        }
     </style>
 </head>
 <body>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert {{ category }}">
-                    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-    {% block content %}{% endblock %}
+    <header style="background-color: #2f4f4f; color: white; padding: 10px 20px; position: fixed; width: 100%; top: 0; z-index: 1000; display: flex; justify-content: flex-end; align-items: center; box-sizing: border-box;">
+        <button onclick="toggleMenu()" style="background: none; border: none; color: #7AB0B0; font-size: 24px; cursor: pointer; position: relative; margin-left: auto;">
+            &#9776;
+        </button>
+        <div id="menu" style="display: none; position: absolute; right: 20px; top: 50px; background: white; color: black; border: 1px solid #ccc; padding: 10px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2);">
+            <a href="{{ url_for('edit_profile') }}" style="display: block; padding: 8px 16px; text-decoration: none; color: black;">Edit Profile</a>
+            <a href="{{ url_for('room_selection') }}" style="display: block; padding: 8px 16px; text-decoration: none; color: black;">Choose Rooms</a>
+            <a href="{{ url_for('create_room') }}" style="display: block; padding: 8px 16px; text-decoration: none; color: black;">Manage Rooms</a>
+            <a href="{{ url_for('logout') }}" style="display: block; padding: 8px 16px; text-decoration: none; color: black;">Logout</a>
+        </div>
+    </header>
+    
+    <main style="padding-top: 60px;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">
+                        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+    function toggleMenu() {
+        var menu = document.getElementById('menu');
+        if (menu.style.display === 'block') {
+            menu.style.display = 'none';
+        } else {
+            menu.style.display = 'block';
+        }
+    }
+    </script>
 </body>
 </html>

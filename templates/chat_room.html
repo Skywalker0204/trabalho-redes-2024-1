@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ room.name }}</h1>
+
+<div id="messages">
+    {% for message in messages %}
+    <div class="message">
+        <strong class="user-name">{{ user_details[message.user_id].username }}</strong>
+        <div class="profile-popup">
+            <p>Username: {{ user_details[message.user_id].username }}</p>
+            <p>Email: {{ user_details[message.user_id].email }}</p>
+            <p>Bio: {{ user_details[message.user_id].bio }}</p>
+        </div>
+        <div>
+            {% if message.content %}
+                {{ message.content }}
+            {% endif %}
+            {% if message.audio_file %}
+                <div>
+                    <audio controls>
+                        <source src="{{ url_for('uploaded_file', filename=message.audio_file) }}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            {% endif %}
+            {% if message.image_file %}
+                <div>
+                    <img src="{{ url_for('uploaded_file', filename=message.image_file) }}" alt="Image" style="max-width: 200px; max-height: 200px;">
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<form action="{{ url_for('send_message') }}" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="room_id" value="{{ room_id }}">
+    <textarea name="message_content" placeholder="Type your message here..."></textarea>
+    <button type="submit">Send</button>
+    <br>
+    <label for="audio-file-upload">Choose Audio File:</label>
+    <input type="file" id="audio-file-upload" name="audio_file" accept="audio/*">
+    <br>
+    <label for="image-file-upload">Choose Image File:</label>
+    <input type="file" id="image-file-upload" name="image_file" accept="image/*">
+    <br>
+</form>
+{% endblock %}

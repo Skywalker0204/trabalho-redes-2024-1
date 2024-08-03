@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Create or Manage Room{% endblock %}
+
+{% block content %}
+<h2>Create a Room</h2>
+<form id="create-room-form" method="POST" action="{{ url_for('create_room') }}">
+    <input type="text" name="room_name" placeholder="Room Name" required>
+    <button type="submit">Create Room</button>
+</form>
+
+<h2>Manage Created Rooms</h2>
+<div id="created-rooms">
+    {% for room in created_rooms %}
+    <div class="room">
+        <h3>{{ room.name }}</h3>
+        <form class="rename-room-form" method="POST" action="{{ url_for('rename_room', room_id=room.id) }}">
+            <input type="text" name="new_name" placeholder="New Room Name" required>
+            <button type="submit">Rename Room</button>
+        </form>
+        <form class="ban-user-form" method="POST" action="{{ url_for('ban_user', room_id=room.id) }}">
+            <input type="text" name="username" placeholder="Username to Ban" required>
+            <button type="submit">Ban User</button>
+        </form>
+        <!-- Add the delete form -->
+        <form class="delete-room-form" method="POST" action="{{ url_for('delete_room', room_id=room.id) }}">
+            <button type="submit">Delete Room</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.getElementById('create-room-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        fetch('{{ url_for("create_room") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+            alert(data);
+            location.reload();
+        });
+    });
+
+    document.querySelectorAll('.rename-room-form').forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            fetch(event.target.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                location.reload();
+            });
+        });
+    });
+
+    document.querySelectorAll('.ban-user-form').forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            fetch(event.target.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                location.reload();
+            });
+        });
+    });
+
+    document.querySelectorAll('.delete-room-form').forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            fetch(event.target.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                location.reload();
+            });
+        });
+    });
+</script>
+
+{% endblock %}
